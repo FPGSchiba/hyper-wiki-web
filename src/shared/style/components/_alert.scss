@@ -1,0 +1,12 @@
+.alert {
+    &.alert-danger {
+        margin: 0;
+        margin-right: 5%;
+        margin-top: 5%;
+
+        &.alert-danger__general {
+            margin: 0;
+            margin-bottom: 0;
+        }
+    }
+}

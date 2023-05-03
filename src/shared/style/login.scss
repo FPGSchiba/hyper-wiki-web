@@ -1,0 +1,32 @@
+.login-form {
+    &.login-form__input {
+        width: 18em;
+        margin: 1em;
+
+        p {
+            color: red;
+            height: 20px;
+        }
+    }
+
+    &.login-form__button {
+        margin: 0;
+        margin-left: 2%;
+        margin-right: 30%;
+    }
+
+    &.login-form__button-wrapper {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        margin-top: 5%;
+        height: 82px;
+        width: 30em;
+    }
+
+    &.login-form__error {
+        position: absolute;
+        top: 5%;
+        right: 5%;
+    }
+}
