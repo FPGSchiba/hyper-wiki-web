@@ -1,5 +1,5 @@
-import { createTheme } from '@mui/material';
-import variables from './variables.module.scss';
+import { createTheme } from "@mui/material";
+import variables from "./variables.module.scss";
 
 export const theme = createTheme({
   breakpoints: {
@@ -24,12 +24,17 @@ export const theme = createTheme({
     success: {
       main: variables.infoColor,
     },
+    text: {
+      primary: variables.primaryTextColor,
+      secondary: variables.secondaryTextColor,
+      disabled: variables.disabledTextColor,
+    },
   },
   typography: {
     fontFamily: variables.fontFamily,
     body2: {
       fontFamily: variables.fontFamily,
-      fontSize: '1rem',
+      fontSize: "1rem",
     },
   },
   shape: {
