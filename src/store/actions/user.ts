@@ -1,41 +1,25 @@
 import { Action } from 'redux';
 import { ThunkAction } from 'redux-thunk';
-import { GET_USER_SUCCESS, GET_PERMISSIONS_SUCCESS } from '../constants/user';
+import { GET_USER_SUCCESS } from '../constants/user';
 import { AppState } from '../format';
-import { IPermission, IUser } from '../format/type/userTypes';
 import { ErrorResponse } from './shared';
-import userManagementService from "../../services/user-management.service";
-import { getUserInfoFromCookies, setTokenToCookies, setUserInfoToCookies } from '../../services/util';
-import { Hash } from '../../components/Login/Util/hash';
+import { CognitoUser } from 'amazon-cognito-identity-js';
+import { signIn, signOut } from '../../services/amplify';
 
-export interface GetUserProfileSuccessAction extends Action<typeof GET_USER_SUCCESS> {
-  user: IUser;
-  token: string;
-}
-
-export interface GetPermissionsSuccessAction extends Action<typeof GET_PERMISSIONS_SUCCESS> {
-  permissions: IPermission[];
+export interface GetUserSuccessAction extends Action<typeof GET_USER_SUCCESS> {
+  user: CognitoUser | null;
 }
 
 export type UserActionTypes =
-  | GetUserProfileSuccessAction
-  | GetPermissionsSuccessAction;
+  | GetUserSuccessAction
 
 type ThunkResult<R> = ThunkAction<R, AppState, undefined, UserActionTypes>;
 
-export function getUserProfileSuccess(user: IUser, token: string): GetUserProfileSuccessAction {
+export function getUserSuccess(user: CognitoUser | null): GetUserSuccessAction {
   return {
     type: GET_USER_SUCCESS,
-    user,
-    token
+    user
   };
-}
-
-function getPermissionsSuccess(permissions: IPermission[]): GetPermissionsSuccessAction {
-  return {
-    type: GET_PERMISSIONS_SUCCESS,
-    permissions
-  }
 }
 
 export function doLogin(
@@ -43,21 +27,14 @@ export function doLogin(
     password: string,
     callback: (
       err?: ErrorResponse,
-      data?: {
-        message: string;
-        token: string;
-        expirationTime: string;
-        user: IUser; // Store User Format
-      },
+      user?: CognitoUser,
     ) => void,
   ): ThunkResult<void> {
     return async function (dispatch: (arg0: any) => void) {
       try {
-        const result = await userManagementService.login(username, Hash(password));
-        dispatch(getUserProfileSuccess(result.user, result.token));
-        setUserInfoToCookies({ expiredTime: result.expirationTime, user: result.user });
-        setTokenToCookies(result.token, new Date(result.expirationTime));
-        callback(null, result);
+        const user = await signIn(username, password);
+        dispatch(getUserSuccess(user));
+        callback(null, user);
       } catch (err: any) {
         const error = err.response?.data || err;
         callback(error);
@@ -65,23 +42,28 @@ export function doLogin(
     };
 }
 
-export function updateUserInfo(): ThunkResult<void>{
+export function federationLogin(user: CognitoUser | null, callback: (err?: ErrorResponse) => void): ThunkResult<void> {
   return async function (dispatch: (arg0: any) => void) {
-    const currentUser = await getUserInfoFromCookies();
-    if (currentUser) dispatch(getUserProfileSuccess(currentUser.user, currentUser?.user.token));
-  }
+    try {
+      dispatch(getUserSuccess(user));
+      callback(null);
+    } catch (err: any) {
+      const error = err.response?.data || err;
+      callback(error);
+    }
+  };
 }
 
-export function updatePermissions(): ThunkResult<void> {
-  return async function (dispatch : (arg0: any) => void) {
-    const result = await userManagementService.getPermissions();
-    dispatch(getPermissionsSuccess(result));
-  }
-}
 
-export function getAllUsers(callback: (data: IUser[]) => void): ThunkResult<void> {
-  return async function () {
-    const result = await userManagementService.getAllUsers();
-    callback(result);
-  }
+export function doSignOut(callback: (err?: ErrorResponse) => void): ThunkResult<void> {
+  return async function (dispatch: (arg0: any) => void) {
+    try {
+      signOut()
+      dispatch(getUserSuccess(null));
+      callback(null);
+    } catch (err: any) {
+      const error = err.response?.data || err;
+      callback(error);
+    }
+  };
 }

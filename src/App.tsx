@@ -6,6 +6,7 @@ import { Home } from "./components/home/home";
 import { NotFound } from "./components/errors/404";
 import PrivateRoute from "./components/login/login-checker";
 import React from "react";
+import { Register } from "./components/register/register";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path={"/home"} element={<Home />} />
       </Route>
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
       <Route path="/not-found" element={<NotFound />} />
       <Route path="*" element={<NotFound />} />
     </Routes>

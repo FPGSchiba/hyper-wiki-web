@@ -7,6 +7,9 @@ import { ThemeProvider } from "@mui/system";
 import theme from "./shared/style/theme";
 import store from "./store";
 import { Provider } from "react-redux";
+import { Amplify } from "aws-amplify";
+import awsExports from "./aws-exports";
+Amplify.configure(awsExports);
 
 ReactDOM.render(
   <React.StrictMode>

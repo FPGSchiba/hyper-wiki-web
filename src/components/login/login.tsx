@@ -1,20 +1,73 @@
 import { Button, TextField, Typography } from "@mui/material";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { federationSignInGoogle, getCurrentUser } from "../../services/amplify";
+import { Auth, Hub } from "aws-amplify";
+import { doLogin, federationLogin } from "../../store/actions/user";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 export function Login() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const validationSchema = Yup.object().shape({
-    username: Yup.string().required("This field is required!"),
+    email: Yup.string()
+      .email("Only valid email addresses are accepted!")
+      .required("This field is required!"),
     password: Yup.string().required("This field is required!"),
   });
   const initialValues = {
-    username: "",
+    email: "",
     password: "",
   };
 
-  const onSubmit = () => {
-    console.log("submit");
+  useEffect(() => {
+    const unsubscribe = Hub.listen("auth", ({ payload: { event, data } }) => {
+      switch (event) {
+        case "signIn":
+          dispatch(
+            federationLogin(data, (err) => {
+              if (err) {
+                console.log(err);
+              } else {
+                navigate("/home");
+              }
+            })
+          );
+          break;
+        case "signOut":
+          dispatch(
+            federationLogin(undefined, (err) => {
+              if (err) {
+                console.log(err);
+              }
+            })
+          );
+          break;
+      }
+    });
+
+    return unsubscribe;
+  }, []);
+
+  const onSubmit = (event: any) => {
+    console.log(event);
+    dispatch(
+      doLogin(event.email, event.password, (err, user) => {
+        if (err) {
+          console.log(err);
+        } else {
+          navigate("/home");
+        }
+      })
+    );
+  };
+
+  const onSignInGoogle = async () => {
+    await federationSignInGoogle();
+    console.log("What happens now?");
+    getCurrentUser();
   };
 
   const formik = useFormik({ initialValues, validationSchema, onSubmit });
@@ -30,13 +83,14 @@ export function Login() {
         </Typography>
         <div className="login login-form login-form__login-wrapper">
           <TextField
-            label={"Username"}
-            name="username"
-            value={formik.values.username}
+            label={"Email"}
+            name="email"
+            value={formik.values.email}
             onChange={formik.handleChange}
-            error={formik.touched.username && Boolean(formik.errors.username)}
-            helperText={formik.touched.username && formik.errors.username}
+            error={formik.touched.email && Boolean(formik.errors.email)}
+            helperText={formik.touched.email && formik.errors.email}
             className="login login-form login-form__input"
+            type="email"
           />
           <TextField
             label={"Password"}
@@ -72,6 +126,7 @@ export function Login() {
         <div className="login login-form login-form__provider-wrapper">
           <Button
             variant="contained"
+            onClick={onSignInGoogle}
             className="login login-form login-form__provider-button"
           >
             <Typography variant="body2">G Login with Google</Typography>

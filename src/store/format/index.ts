@@ -1,11 +1,11 @@
-import { IUserRights } from "./type/userTypes";
+import { CognitoUser } from 'amazon-cognito-identity-js';
 
 export interface AppState {
-    currentUser: UserState
+    userState: UserState;
 }
 
+
 export interface UserState {
-    sessionToken: string,
-    userToken: string,
-    user: IUserRights
+    user: CognitoUser | null;
+    loggedIn: boolean;
 }
