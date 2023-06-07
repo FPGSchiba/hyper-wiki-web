@@ -66,7 +66,6 @@ export function Login() {
 
   const onSignInGoogle = async () => {
     await federationSignInGoogle();
-    console.log("What happens now?");
     getCurrentUser();
   };
 
@@ -113,6 +112,7 @@ export function Login() {
             <Button
               variant="contained"
               className="login login-form login-form__button"
+              onClick={() => navigate("/register")}
             >
               <Typography variant="body2">SignUp</Typography>
             </Button>

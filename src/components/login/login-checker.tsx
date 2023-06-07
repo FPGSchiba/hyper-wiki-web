@@ -10,7 +10,6 @@ const PrivateRoute = () => {
   const [test, setTest] = useState("");
 
   useEffect(() => {
-    console.log(location);
     setTest(location.pathname);
   }, [location]);
 
